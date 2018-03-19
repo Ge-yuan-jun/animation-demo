@@ -7,7 +7,7 @@ const packageJSON = require('../package.json')
 // 这里的变量将被所有环境共享.
 const base = {
   // 程序名称.
-  APPNAME: JSON.stringify('哔哩哔哩直播，二次元弹幕直播平台'),
+  APPNAME: JSON.stringify('webgl'),
 
   // 构建时间.
   BUILD_TIME: JSON.stringify(moment().format('YYYY.MM.DD - HH:mm:ss')),

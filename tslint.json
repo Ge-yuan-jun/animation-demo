@@ -25,7 +25,8 @@
     "space-before-function-paren": true,
     "whitespace": [true, "check-module"],
     "trailing-comma": false,
-    "variable-name": false
+    "variable-name": false,
+    "interface-name": [true, "never-prefix"]
   },
   "rulesDirectory": []
 }

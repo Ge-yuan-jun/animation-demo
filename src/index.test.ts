@@ -1,5 +1,5 @@
 import VueRouter from 'vue-router'
-import { router, root } from './index'
+import { root, router } from './index'
 
 describe('src/index.ts 测试.', function () {
   test('router 应该成功建立.', () => {

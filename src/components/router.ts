@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
-import FireWork from './firework/index.vue'
+import FireWork from './fireworks/index.vue'
 import SpringLoading from './spring-loading/index.vue'
 
 Vue.use(VueRouter)
