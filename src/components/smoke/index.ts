@@ -1,29 +1,27 @@
 import Vue from 'Vue'
 import { Component } from 'vue-property-decorator'
 
+import TWEEN from '@tweenjs/tween.js'
 import * as THREE from 'three'
 
-import { init as fireworkInit, update as fireworkUpdate } from './modules/firework'
-
+import $SATEG from './modules/smoke'
 /**
- * three.js 烟花效果
+ * three.js 背景图以及烟雾效果
  */
 @Component({})
-export default class Firework extends Vue {
-  firewrokSetting () {
+export default class Smoke extends Vue {
+  smokeInit () {
     // -- stage 动画放置区域
-    const stage = document.querySelector('.wrapper')
+    const stage = document.querySelector('.smoke-wrapper')
 
     // -- Scene
     const scene = new THREE.Scene()
-    // scene.fog = new THREE.FogExp2(0x333333, 0.001)
 
     // -- Camera
     const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 5000 )
-    camera.position.set(0, 0, 5)
+    camera.position.set(0, 0, 0)
 
-    // -- 初始化烟花
-    fireworkInit(scene)
+    $SATEG(scene)
 
     const renderer = new THREE.WebGLRenderer({
       alpha: true
@@ -44,7 +42,8 @@ export default class Firework extends Vue {
      * 初始化渲染烟花
      */
     function render () {
-      fireworkUpdate()
+      TWEEN.update()
+
       renderer.clear()
       renderer.render(scene, camera)
     }
@@ -66,6 +65,6 @@ export default class Firework extends Vue {
   }
 
   mounted () {
-    this.firewrokSetting()
+    this.smokeInit()
   }
 }
