@@ -4,6 +4,7 @@ import VueRouter from 'vue-router'
 import FireWork from './fireworks/index.vue'
 import Smoke from './smoke/index.vue'
 import SpringLoading from './spring-loading/index.vue'
+import Stage from './stage/index.vue'
 
 Vue.use(VueRouter)
 
@@ -23,6 +24,11 @@ const router = new VueRouter({
       path: '/smoke',
       name: 'Smoke',
       component: Smoke
+    },
+    {
+      path: '/stage',
+      name: 'Stage',
+      component: Stage
     }
   ]
 })

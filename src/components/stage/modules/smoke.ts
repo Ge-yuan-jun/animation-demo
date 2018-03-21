@@ -2,7 +2,7 @@
  * @Author: Ge.Yuanjun
  * @Date: 2018-03-21 10:59:08
  * @Last Modified by: Ge.Yuanjun
- * @Last Modified time: 2018-03-21 10:59:43
+ * @Last Modified time: 2018-03-21 14:27:06
  * @desc: 创建背景图片以及烟雾效果
  */
 
@@ -11,8 +11,8 @@ import * as THREE from 'three'
 import TWEEN from '@tweenjs/tween.js'
 
 const SMOKE_ASSETS = {
-  background: require('../assets/back.jpg'),
-  smoke: require('../assets/smoke.png')
+  background: require('../../smoke/assets/back.jpg'),
+  smoke: require('../../smoke/assets/smoke.png')
 }
 
 /**
