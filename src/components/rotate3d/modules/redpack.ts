@@ -2,7 +2,7 @@
  * @Author: Ge.Yuanjun
  * @Date: 2018-03-22 11:42:08
  * @Last Modified by: Ge.Yuanjun
- * @Last Modified time: 2018-03-22 15:44:45
+ * @Last Modified time: 2018-03-22 15:46:26
  */
 
 import * as THREE from 'three'
@@ -38,11 +38,11 @@ function createRedPacket ($scene) {
     GroupRedpack.position.set(-180, -70, -320)
     GroupRedpack.rotation.set(-1, -0.1, 0)
 
-    // new TWEEN.Tween(GroupRedpack.rotation)
-    //   .to({ z: Math.PI * 2 }, 12000)
-    //   .easing(TWEEN.Easing.Linear.None)
-    //   .repeat(Infinity)
-    //   .start()
+    new TWEEN.Tween(GroupRedpack.rotation)
+      .to({ z: Math.PI * 2 }, 12000)
+      .easing(TWEEN.Easing.Linear.None)
+      .repeat(Infinity)
+      .start()
 
     scene.add(GroupRedpack)
   })
