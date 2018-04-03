@@ -2,6 +2,7 @@ import Vue from 'vue'
 import VueRouter from 'vue-router'
 
 import FireWork from './fireworks/index.vue'
+import LogoCanvas from './logo-canvas/index.vue'
 import Redpack from './rotate3d/index.vue'
 import Smoke from './smoke/index.vue'
 import SpringLoading from './spring-loading/index.vue'
@@ -35,6 +36,11 @@ const router = new VueRouter({
       path: '/redpack',
       name: 'Redpack',
       component: Redpack
+    },
+    {
+      path:'/logo-canvas',
+      name: 'LogoCanvas',
+      component: LogoCanvas
     }
   ]
 })
