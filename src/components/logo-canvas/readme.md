@@ -1,5 +1,11 @@
 # 利用 canvas “磨”出一个 logo
 
+![logo-1](https://github.com/Ge-yuan-jun/animation-demo/blob/master/static/logo-1.png)
+
+![logo-2](https://github.com/Ge-yuan-jun/animation-demo/blob/master/static/logo-2.png)
+
+![logo-3](https://github.com/Ge-yuan-jun/animation-demo/blob/master/static/logo-3.png)
+
 ### 从 loading 动效入手
 
 目前工作中主要负责活动页的前端 UI 展示。在活动页面的制作过程中，发现其与平常的功能页面存在一些不同点：
