@@ -265,3 +265,318 @@ loop () {
 ```
 
 以上，就可以实现不带“火花四溅”效果的 logo 动画。
+
+### 添加“火花四溅”效果
+
+“火花四溅”效果需要两个类来控制，一个是单个的“火花”类 Spark，还需要一个“火花”的集合管理类 Particles。
+
+#### Spark 类
+
+Spark 需要对外提供三个方法：
+
+1. update：“火花”更新方法
+2. remove：“火花”移除方法
+3. render：“火花”渲染方法
+
+remove 方法最简单：
+
+```typescript
+public remove (index, array) {
+  array.splice(index, 1)
+}
+```
+
+删除数组中指定索引的项即可。
+
+update 以及 render 方法比较复杂，render 主要是用来初始化渲染每一个火花，update 主要是用来更新每一个火花的运动轨迹。
+
+完成这两个方法之前，需要先了解 Spark 的私有属性：
+
+```typescript
+/**
+  * 初始化坐标
+  */
+private x: number
+private y: number
+
+/**
+  * 速度值
+  * direct
+  * weight
+  * friction
+  */
+private v: any
+
+/**
+  * 横向加速度
+  * change
+  * min
+  * max
+  */
+private a: any
+
+/**
+  * 纵向加速度
+  * direct
+  * weight
+  */
+private g: any
+
+/**
+  * “火花”线条的宽度
+  */
+private width: number
+
+/**
+  * 火花运动剩余时长
+  */
+private lifespan: number
+
+/**
+  * 火花运动的时长
+  */
+private maxlife: number
+private color: string
+
+/**
+  * 运动轨迹中前一次点的坐标
+  */
+private prev: any
+```
+
+这些私有属性会在实例化 Spark 类时被调用。
+
+```typescript
+  constructor (options: any) {
+    // 初始化火花的坐标
+    this.x = options.x
+    this.y = options.y
+
+    /**
+     * 初始化初始速度，横向加速度，纵向加速度
+     * 每次 update 需要利用到 v,g 计算坐标点
+     */
+    this.v = { direct: Math.random() * Math.PI * 2, weight: Math.random() * 10 + 2, friction: 0.88 }
+    this.g = { direct: Math.PI * 0.5 + (Math.random() * 0.4 - 0.2), weight: Math.random() * 0.25 + 0.25 }
+    this.a = { change: Math.random() * 0.4 - 0.2, min: this.v.direct - Math.PI * 0.4,
+      max: this.v.direct + Math.PI * 0.4 }
+
+    // 随机化火花的宽度
+    this.width = Math.random() * 3
+
+    // 初始化生命周期
+    this.lifespan = Math.round(Math.random() * 20 + 30)
+    this.maxlife = this.lifespan
+
+    // 初始化运动轨迹的前一个点
+    this.prev = { x: this.x, y: this.y }
+  }
+```
+
+理解了 Spark 类的初始化，我们可以尝试完成 render 以及 update 方法了。
+
+##### render 方法
+
+需要利用到 canvas 的绘图 API，主要包括：
+
+1. beginPath、closePath
+2. globalAlpha
+3. createLinearGradient
+4. strokeStyle
+5. lineWidth
+6. moveTo
+7. lineTo
+
+接受一个参数 ctx，代表外部 canvas 的 2d 画布。
+
+主要代码如下：
+
+```typescript
+public render (ctx) {
+  // 已经消失，则不再绘制
+  if (this.lifespan <= 0) {
+    return
+  }
+  ctx.beginPath()
+  ctx.globalAlpha = this.lifespan / this.maxlife
+
+  /**
+    * 绘制渐变区域
+    */
+  const grd = ctx.createLinearGradient(this.x, this.y, this.prev.x, this.prev.y)
+
+  grd.addColorStop(0, '#FFFFFF')
+  grd.addColorStop(0.3, '#FF7F00')
+  grd.addColorStop(0.7, '#F47843')
+  grd.addColorStop(0.9, '#FF0000')
+
+  ctx.strokeStyle = grd
+  ctx.lineWidth = this.width
+
+  /**
+    * 到下一个点重新开始绘制
+    */
+  ctx.moveTo(this.x, this.y)
+  ctx.lineTo(this.prev.x, this.prev.y)
+  ctx.stroke()
+  ctx.closePath()
+}
+```
+
+render 方法并不复杂，只是单纯的利用 canvas 的 API 实现一个渐变的线段。update 方法才是实现动效的关键所在。
+
+##### update 方法
+
+update 方法主要有以下功能：
+
+1. 根据速度以及加速度重新计算坐标点
+2. 随机化火花的运动轨迹
+3. 计算火花的运动时间，超过其生命时长，则删除该节点
+4. 根据实际的效果，对火花的运动做一些微调
+
+计算坐标点的代码如下：
+
+```javascript
+// 保存运动的点
+this.prev = { x: this.x, y: this.y }
+
+/**
+  * 重新计算 坐标点 (x, y)
+  */
+this.x += Math.cos(this.v.direct) * this.v.weight
+this.x += Math.cos(this.g.direct) * this.g.weight
+
+this.y += Math.sin(this.v.direct) * this.v.weight
+this.y += Math.sin(this.g.direct) * this.g.weight
+```
+
+随机化火花的运动轨迹可以这样实现：
+
+```javascript
+/**
+  * 随机话火花的轨迹
+  */
+this.v.direct += this.a.change
+
+/**
+  * 改变加速度的正负值，轨迹看起来更加随机化
+  */
+if (this.v.direct > this.a.max || this.v.direct < this.a.min) {
+  this.a.change *= -1
+}
+```
+
+想要判断是否删除节点，可以这么做：
+
+```javascript
+/**
+  * 火花运动生命时长，超过一定时间，则删除该节点
+  */
+this.lifespan > 0 && this.lifespan--
+this.lifespan <=0 && this.remove(index, array)
+```
+
+如果这么完成 update 方法，实际效果可以不尽如人意，所以，做了下面的微调：
+
+```javascript
+/**
+  * 缩小火花四射的范围
+  */
+if (this.v.weight > 0.2) {
+  this.v.weight *= this.v.friction
+}
+```
+
+全部的 update 方法代码如下：
+
+```typescript
+public update (index, array) {
+  this.prev = { x: this.x, y: this.y }
+
+  /**
+    * 重新计算 坐标点 (x, y)
+    */
+  this.x += Math.cos(this.v.direct) * this.v.weight
+  this.x += Math.cos(this.g.direct) * this.g.weight
+
+  this.y += Math.sin(this.v.direct) * this.v.weight
+  this.y += Math.sin(this.g.direct) * this.g.weight
+
+  /**
+    * 缩小火花四射的范围
+    */
+  if (this.v.weight > 0.2) {
+    this.v.weight *= this.v.friction
+  }
+
+  /**
+    * 随机话火花的轨迹
+    */
+  this.v.direct += this.a.change
+  /**
+    * 改变加速度的正负值，轨迹看起来更加随机化
+    */
+  if (this.v.direct > this.a.max || this.v.direct < this.a.min) {
+    this.a.change *= -1
+  }
+
+  /**
+    * 火花运动生命时长，超过一定时间，则删除该节点
+    */
+  this.lifespan > 0 && this.lifespan--
+  this.lifespan <=0 && this.remove(index, array)
+}
+```
+
+这是单个火花效果，如果直接使用，不会出现“火花四溅”的效果。我们需要建立一个 Partciles 类来管理火花。
+
+#### Particles 类
+
+Particles 类需要两个私有属性来实现：
+
+1. max：同时可以出现火花数目
+2. sparks：存放火花的数组
+
+在初始化 Particles 类时，需要火花数目一定的随机性，所以 max 值都不一样。
+
+```typescript
+constructor (options: any) {
+  /**
+    * 最多 10 个火花
+    */
+  this.max = Math.round(Math.random() * 5 + 5)
+  this.sparks = []
+
+  for (let i = 0; i < this.max; i++) {
+    this.sparks.push(new Spark(options))
+  }
+}
+```
+
+Particles 类需要提供两个方法：
+
+1. update：更新所有的火花
+2. render：渲染所有的火花
+
+这两个方法很简单，都是自解释代码：
+
+```typescript
+/**
+  * 更新火花
+  */
+public update () {
+  this.sparks.forEach((s, i) => s.update(i, this.sparks))
+}
+
+/**
+  * 渲染火花
+  * @param ctx canvas - canvas 对象的 context 属性
+  */
+public render (ctx) {
+  this.sparks.forEach(s => s.render(ctx))
+}
+```
+
+#### 火花的引入
+
+行百里者半九十，我们还要将这两个类跟之前的 logo 展示相结合，一起来吧！

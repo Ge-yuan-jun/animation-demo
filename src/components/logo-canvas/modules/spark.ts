@@ -35,7 +35,7 @@ export default class Spark {
    * 生命周期
    */
   private maxlife: number
-  private color: string
+  // private color: string
 
   /**
    * 前一个点坐标
@@ -59,7 +59,7 @@ export default class Spark {
     this.lifespan = Math.round(Math.random() * 20 + 30)
     this.maxlife = this.lifespan
 
-    this.color = '#f47842'
+    // this.color = '#f47842'
     this.prev = { x: this.x, y: this.y }
   }
 
