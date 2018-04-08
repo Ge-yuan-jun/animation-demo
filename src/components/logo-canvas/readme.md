@@ -71,7 +71,6 @@ data () {
     cwidth: 0, // canvas 的宽度
     cheight: 0, // canvas 的高度
     text: {}, // Text 类的实例，主要是利用这个类来实现 logo 的展示
-    particles: [] // “磨”出来的火花数组
   }
 }
 ```
@@ -105,6 +104,113 @@ mounted () {
 }
 ```
 
-上文中，有一个 Text 类，这个类是展示 logo 的关键，接下来，我们就来分析一下怎么写这个 Text 类。
+上文中，有一个 Text 类，这个类是展示 logo 的关键，这个类主要实现了：
+
+1. 获取图片的数据方法`init`
+2. 提供 logo 渲染的方法`render`
+
+对于`init`方法：
+
+1. 需要返回一个 Promise，这样在读取完图片的数据之后，调用方可以链式调用自己定义的方法。
+2. 读取的图片数据需要有一个地方存储。
+
+对于图片数据存储，有多种方法。我们采取的做法是利用一个 canvas 来存储数据，调用方渲染 canvas 的时候，可以将 Text 类内定义的 canvas 数据吐出来。
+
+具体的代码示例：
+
+```javascript
+// this.tcontext 为 Text 类内部的 canvas 2d 画布
+this.tcontext.putImageData(this.data, 0, 0, 0, 0, this.index + 1, this.base.height)
+
+// ctx 为 Text 类外部的 canvas 2d 画布
+ctx.drawImage(this.tcanvas, this.x, this.y)
+```
+
+好了，接下来，具体看看 Text 类的实现。
+
+#### Text 类的实现
+
+经过上面的分析，需要先在 Text 类内定义私有属性。
+
+```typescript
+private tcanvas: any // 内部的 canvas
+private tcontext: any // 内部的 canvas 画布
+private clear: boolean = false // 初始化时，标识是否清除 canvas 画布内容
+private base: any // 内部 canvas 的基本属性
+private x: number // logo 图片渲染的起始 x 轴值
+private y: number // logo 图片渲染的起始 y 轴值
+private data: any // 存储图片数据
+```
+
+初始化属性的赋值。
+
+```typescript
+constructor () {
+  this.tcanvas = document.createElement('canvas')
+  this.tcontext = this.tcanvas.getContext('2d')
+}
+```
+
+##### init 方法
+
+对于`init`方法，先返回一个 Promise。
+
+```typescript
+public init (): any {
+  return new Promise((resolve, reject) => {})
+}
+```
+
+该方法需要传入3个参数：
+
+1. w：外部 canvas 的宽度，类型为 number
+2. h：外部 canvas 的高度，类型为 number
+3. src：logo 图片的地址，类型为 string
+
+```typescript
+public init (w: number, h: number, src: string): any {
+  return new Promise((resolve, reject) => {})
+}
+```
+
+添加获取图片数据以及计算 logo 图片渲染位置的代码。
+
+```typescript
+public init (w: number, h: number, src: string): any {
+  return new Promise((resolve, reject) => {
+    // 获取图片
+    this.base = new Image()
+    // 设置 crossOrigin 为 ‘’，保证 canvas 不会报图片跨域的错误
+    this.base.crossOrigin = ''
+    this.base.src = require(`../assets/${src}`)
+
+    this.base.onerror = () => {
+      reject(new Error(`Could not load image at '../assets/${src}'`))
+    }
+
+    this.base.onload = () => {
+      // 计算 logo 图片渲染位置
+      this.x = w * 0.5 - this.base.width * 0.5
+      this.y = h * 0.5 - this.base.height * 0.5
+
+      // 设置内部 canvas 的宽高与外部相同
+      this.tcanvas.width = this.base.width
+      this.tcanvas.height = this.base.height
+
+      // 存储图片数据
+      this.tcontext.drawImage(this.base, 0, 0)
+      this.data = this.tcontext.getImageData(0, 0, this.base.width, this.base.height)
+      resolve()
+    }
+  })
+}
+```
+
+init 方法只是读取了数据，而将 logo渲染需要交给另一个 render 方法。
+
+render 方法需要一个参数：
+
+1. ctx：外部 canvas 的 2d  画布
 
 
+##### render 方法

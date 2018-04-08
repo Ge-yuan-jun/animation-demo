@@ -14,7 +14,7 @@
 
 class DirectProxy {
   constructor (url = '') {
-    this.target = 'http://api.live.bilibili.com' + url
+    this.target = url
     this.changeOrigin = true
   }
 }
@@ -32,16 +32,12 @@ const specialRoles = [
 ]
 
 // 批量匹配.
-const wideProxy = [
-  '/i/**',
-  '/activity/v1/**',
-  '/eventSubject/**'
-]
+const wideProxy = []
 
 // 自定义匹配.
 const customProxy = {
   // '/i/**': {
-  //   target: 'http://api.live.bilibili.com',
+  //   target: 'http://live.bilibili.com',
   //   changeOrigin: true
   // }
 }
