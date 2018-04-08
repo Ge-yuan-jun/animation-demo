@@ -87,7 +87,7 @@ export default class Text {
 
     this.index += 4
 
-    this.tcontext.putImageData(this.data, 0, 0, 0, 0, this.index + 1, this.base.height)
+    this.tcontext.putImageData(this.data, 0, 0, 0, 0, this.index, this.base.height)
     ctx.drawImage(this.tcanvas, this.x, this.y)
   }
 }

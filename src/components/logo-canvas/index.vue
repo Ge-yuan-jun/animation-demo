@@ -1,7 +1,7 @@
 <template lang="jade">
   div.page-loading-wrapper
     canvas#load-canvas
-      | 对不起，您的版本不支持 canvas， 请更新活更换浏览器再访问
+      | 对不起，您的版本不支持 canvas， 请更新或更换浏览器再访问
 </template>
 
 <style lang="stylus">
@@ -35,12 +35,11 @@ export default {
     loop () {
       this.render()
       this.update()
-      // window.setTimeout(this.loop, 1500)
       window.requestAnimationFrame(this.loop)
     },
     update () {
-      // this.text.update(this.particles)
-      // this.particles.forEach(p => p.update())
+      this.text.update(this.particles)
+      this.particles.forEach(p => p.update())
     },
     render () {
       this.context.globalCompositeOperation = 'source-over'
@@ -48,7 +47,7 @@ export default {
       this.context.fillStyle = '#000000'
       this.context.fillRect(0, 0, this.cwidth, this.cheight)
       this.text.render(this.context)
-      // this.particles.forEach(p => p.render(this.context))
+      this.particles.forEach(p => p.render(this.context))
     },
     animation () {
       window.requestAnimationFrame = window.requestAnimationFrame ||

@@ -31,7 +31,7 @@
 
 对于第二个，需要解决的问题就有点多了。首先，每一粒火花出发点的定位。其次，每一粒火花的运动轨迹变化。最后，火花的颜色变化，每一个火花从头到尾会有一个颜色的过渡。
 
-### logo的展示
+### logo的展示动画
 
 首先，在 HTML 结构中，新增一个 canvas。
 
@@ -140,6 +140,7 @@ private base: any // 内部 canvas 的基本属性
 private x: number // logo 图片渲染的起始 x 轴值
 private y: number // logo 图片渲染的起始 y 轴值
 private data: any // 存储图片数据
+private index: number // 渲染图片的宽度
 ```
 
 初始化属性的赋值。
@@ -148,6 +149,7 @@ private data: any // 存储图片数据
 constructor () {
   this.tcanvas = document.createElement('canvas')
   this.tcontext = this.tcanvas.getContext('2d')
+  this.index = 0
 }
 ```
 
@@ -208,9 +210,58 @@ public init (w: number, h: number, src: string): any {
 
 init 方法只是读取了数据，而将 logo渲染需要交给另一个 render 方法。
 
+##### render 方法
+
 render 方法需要一个参数：
 
-1. ctx：外部 canvas 的 2d  画布
+1. ctx：外部 canvas 的 2d  画布，这样就可以将内部 canvas 的图片数据分享到外部 canvas 画布
 
+在 init 函数中，内部的 canvas 2d 画布已经保存了图片。render 函数刚调用时，需要保证
+内部 canvas 2d 画布的图片数据被清空，这样才能保证渲染的动画效果。
 
-##### render 方法
+```typescript
+public render (ctx): void {
+  if (!this.clear) {
+    this.tcontext.clearRect(0, 0, this.tcanvas.width, this.tcanvas.height)
+    this.clear = true
+  }
+}
+```
+
+清理完数据之后，开始渲染。渲染动画的原理就是每次渲染的宽度比之前渲染的宽度多出一定的值，这样，在一定时间内多次渲染，就会在视觉里形成动画。完成的 render 代码如下：
+
+```typescript
+public render (ctx): void {
+  if (!this.clear) {
+    this.tcontext.clearRect(0, 0, this.tcanvas.width, this.tcanvas.height)
+    this.clear = true
+  }
+
+  // 改变每次渲染的宽度
+  this.index += 4
+
+  // 渲染内部的 canvas
+  this.tcontext.putImageData(this.data, 0, 0, 0, 0, this.index, this.base.height)
+  ctx.drawImage(this.tcanvas, this.x, this.y)
+}
+```
+
+在触发 mounted 钩子函数并获取好图片数据之后，可以通过 `requestAnimationFrame` 重复调用 loop 来渲染 logo。
+
+loop函数如下：
+
+```javascript
+loop () {
+  // 设置外部 canvas
+  this.context.globalCompositeOperation = 'source-over'
+  this.context.globalAlpha = 1
+  this.context.fillStyle = '#000000'
+  this.context.fillRect(0, 0, this.cwidth, this.cheight)
+  this.text.render(this.context)
+
+  // 不断调用 loop 函数，以达到图片渲染的动画效果
+  window.requestAnimationFrame(this.loop)
+}
+```
+
+以上，就可以实现不带“火花四溅”效果的 logo 动画。
