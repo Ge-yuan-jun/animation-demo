@@ -580,3 +580,18 @@ public render (ctx) {
 #### 火花的引入
 
 行百里者半九十，我们还要将这两个类跟之前的 logo 展示相结合，一起来吧！
+
+首先在外部 canvas，需要添加一个响应式数据：`particles`。
+
+```javascript
+data () {
+  return {
+    canvas: {},
+    context: {},
+    cwidth: 0,
+    cheight: 0,
+    text: {},
+    particles: [] // 用来保存火花管理类 Particles
+  }
+}
+```
