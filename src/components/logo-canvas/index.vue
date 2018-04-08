@@ -12,7 +12,6 @@
   width: 100%
   height: 100%
   z-index: 2000
-  background: #ffffff
   #load-canvas
     width: 100%
     height: auto
@@ -36,6 +35,7 @@ export default {
     loop () {
       this.render()
       this.update()
+      // window.setTimeout(this.loop, 1500)
       window.requestAnimationFrame(this.loop)
     },
     update () {
@@ -45,7 +45,7 @@ export default {
     render () {
       this.context.globalCompositeOperation = 'source-over'
       this.context.globalAlpha = 1
-      this.context.fillStyle = '#ffffff'
+      this.context.fillStyle = '#000000'
       this.context.fillRect(0, 0, this.cwidth, this.cheight)
       this.text.render(this.context)
       this.particles.forEach(p => p.render(this.context))
@@ -67,13 +67,13 @@ export default {
   mounted () {
     this.canvas = document.getElementById('load-canvas')
     this.context = this.canvas.getContext('2d')
-    this.cwidth = window.innerWidth * (window.devicePixelRatio > 1 ? 3 : 1)
-    this.cheight = window.innerHeight * (window.devicePixelRatio > 1 ? 3 : 1)
+    this.cwidth = window.innerWidth * (window.devicePixelRatio > 1 ? 1.2 : 1)
+    this.cheight = window.innerHeight * (window.devicePixelRatio > 1 ? 1.2 : 1)
     this.canvas.width = this.cwidth
     this.canvas.height = this.cheight
 
     this.text = new Text()
-    this.text.init(this.cwidth, this.cheight, 'google.png').then(() => {
+    this.text.init(this.cwidth, this.cheight, 'bilibili-logo.png').then(() => {
       this.loop()
     }).catch((err) => {
       console.log(err)
