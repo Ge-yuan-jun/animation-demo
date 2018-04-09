@@ -29,7 +29,7 @@
 1. “bilibili” 从左到右匀速展示
 2. “磨”的火花四射
 
-对于第一个，思路其实很简单，利用 canvas 读取图片的像素点，一次展示图片一列的像素点。
+对于第一个，思路其实很简单，利用 canvas 读取图片的像素点，每次多展示图片一列的像素点。
 
 对于第二个，需要解决的问题就有点多了。首先，每一粒火花出发点的定位。其次，每一粒火花的运动轨迹变化。最后，火花的颜色变化，每一个火花从头到尾会有一个颜色的过渡。
 
@@ -40,7 +40,7 @@
 ```html
   <div class="page-loading-wrapper">
     <canvas id="load-canvas">
-      对不起，您的版本不支持 canvas， 请更新活更换浏览器再访问
+      对不起，您的版本不支持 canvas， 请更新或更换浏览器再访问
     </canvas>
   </div>
 ```
@@ -63,7 +63,7 @@
 }
 ```
 
-接下来，就是最基本的响应式属性定义
+接着定义最基本的响应式数据
 
 ```javascript
 data () {
@@ -114,9 +114,9 @@ mounted () {
 对于`init`方法：
 
 1. 需要返回一个 Promise，这样在读取完图片的数据之后，调用方可以链式调用自己定义的方法。
-2. 读取的图片数据需要有一个地方存储。
+2. 读取的图片数据需要有一个地方存储，方便接下来的内部操作。
 
-对于图片数据存储，有多种方法。我们采取的做法是利用一个 canvas 来存储数据，调用方渲染 canvas 的时候，可以将 Text 类内定义的 canvas 数据吐出来。
+对于图片数据存储，有多种方法。我们采取的做法是利用一个 canvas 来存储数据，调用方需要图片数据时，可以直接调用 canvas API 获取。
 
 具体的代码示例：
 
@@ -124,7 +124,7 @@ mounted () {
 // this.tcontext 为 Text 类内部的 canvas 2d 画布
 this.tcontext.putImageData(this.data, 0, 0, 0, 0, this.index + 1, this.base.height)
 
-// ctx 为 Text 类外部的 canvas 2d 画布
+// ctx 为调用方 canvas 2d 画布
 ctx.drawImage(this.tcanvas, this.x, this.y)
 ```
 
@@ -132,7 +132,7 @@ ctx.drawImage(this.tcanvas, this.x, this.y)
 
 #### Text 类的实现
 
-经过上面的分析，需要先在 Text 类内定义私有属性。
+先在 Text 类内定义私有属性。
 
 ```typescript
 private tcanvas: any // 内部的 canvas
@@ -155,9 +155,7 @@ constructor () {
 }
 ```
 
-##### init 方法
-
-对于`init`方法，先返回一个 Promise。
+init 方法先返回一个 Promise。
 
 ```typescript
 public init (): any {
@@ -171,6 +169,8 @@ public init (): any {
 2. h：外部 canvas 的高度，类型为 number
 3. src：logo 图片的地址，类型为 string
 
+这样，我们就可以获取图片，并在视图的正中央展示。
+
 ```typescript
 public init (w: number, h: number, src: string): any {
   return new Promise((resolve, reject) => {})
@@ -182,7 +182,6 @@ public init (w: number, h: number, src: string): any {
 ```typescript
 public init (w: number, h: number, src: string): any {
   return new Promise((resolve, reject) => {
-    // 获取图片
     this.base = new Image()
     // 设置 crossOrigin 为 ‘’，保证 canvas 不会报图片跨域的错误
     this.base.crossOrigin = ''
@@ -210,16 +209,13 @@ public init (w: number, h: number, src: string): any {
 }
 ```
 
-init 方法只是读取了数据，而将 logo渲染需要交给另一个 render 方法。
-
-##### render 方法
+init 方法只是读取了数据，而 logo 渲染需要另一个 render 方法。
 
 render 方法需要一个参数：
 
-1. ctx：外部 canvas 的 2d  画布，这样就可以将内部 canvas 的图片数据分享到外部 canvas 画布
+- ctx：canvas 的 2d 画布，这样就可以读取 Text 内部存储的图片数据
 
-在 init 函数中，内部的 canvas 2d 画布已经保存了图片。render 函数刚调用时，需要保证
-内部 canvas 2d 画布的图片数据被清空，这样才能保证渲染的动画效果。
+其次，render 函数刚调用时，需要清空内部 canvas 2d 画布的图片数据，这样才能保证渲染的动画效果。
 
 ```typescript
 public render (ctx): void {
@@ -230,7 +226,7 @@ public render (ctx): void {
 }
 ```
 
-清理完数据之后，开始渲染。渲染动画的原理就是每次渲染的宽度比之前渲染的宽度多出一定的值，这样，在一定时间内多次渲染，就会在视觉里形成动画。完成的 render 代码如下：
+清理完数据之后，开始渲染。渲染动画的原理就是每次渲染的宽度比之前渲染的宽度多出一定的值，这样，在一定时间内多次渲染，就会在视觉里形成动画。完整的 render 代码如下：
 
 ```typescript
 public render (ctx): void {
@@ -240,7 +236,9 @@ public render (ctx): void {
   }
 
   // 改变每次渲染的宽度
-  this.index += 4
+  if (this.index < this.base.width) {
+    this.index += 4
+  }
 
   // 渲染内部的 canvas
   this.tcontext.putImageData(this.data, 0, 0, 0, 0, this.index, this.base.height)
@@ -248,17 +246,19 @@ public render (ctx): void {
 }
 ```
 
-在触发 mounted 钩子函数并获取好图片数据之后，可以通过 `requestAnimationFrame` 重复调用 loop 来渲染 logo。
+在触发 mounted 钩子函数并获取好图片数据之后，可以通过 `requestAnimationFrame` 重复调用 loop 来渲染动画。
 
 loop函数如下：
 
 ```javascript
 loop () {
-  // 设置外部 canvas
+  // 设置 canvas 画布
   this.context.globalCompositeOperation = 'source-over'
   this.context.globalAlpha = 1
   this.context.fillStyle = '#000000'
   this.context.fillRect(0, 0, this.cwidth, this.cheight)
+
+  // 渲染 logo
   this.text.render(this.context)
 
   // 不断调用 loop 函数，以达到图片渲染的动画效果
@@ -270,7 +270,7 @@ loop () {
 
 ### 添加“火花四溅”效果
 
-“火花四溅”效果需要两个类来控制，一个是单个的“火花”类 Spark，还需要一个“火花”的集合管理类 Particles。
+“火花四溅”需要分成两块，一个是单个的“火花”类 Spark，还需要一个“火花”的集合管理类 Particles。
 
 #### Spark 类
 
@@ -302,7 +302,7 @@ private x: number
 private y: number
 
 /**
-  * 速度值
+  * 速度对象值
   * direct
   * weight
   * friction
@@ -310,7 +310,7 @@ private y: number
 private v: any
 
 /**
-  * 横向加速度
+  * 横向加速度对象值
   * change
   * min
   * max
@@ -318,7 +318,7 @@ private v: any
 private a: any
 
 /**
-  * 纵向加速度
+  * 纵向加速度对象值
   * direct
   * weight
   */
@@ -330,56 +330,57 @@ private g: any
 private width: number
 
 /**
-  * 火花运动剩余时长
+  * “火花”运动剩余时长
   */
 private lifespan: number
 
 /**
-  * 火花运动的时长
+  * “火花”运动的时长
   */
 private maxlife: number
-private color: string
 
 /**
   * 运动轨迹中前一次点的坐标
+  * x
+  * y
   */
 private prev: any
 ```
 
-这些私有属性会在实例化 Spark 类时被调用。
+这些私有属性的初始化如下：
 
 ```typescript
-  constructor (options: any) {
-    // 初始化火花的坐标
-    this.x = options.x
-    this.y = options.y
+constructor (options: any) {
+  // 初始化火花的坐标
+  this.x = options.x
+  this.y = options.y
 
-    /**
-     * 初始化初始速度，横向加速度，纵向加速度
-     * 每次 update 需要利用到 v,g 计算坐标点
-     */
-    this.v = { direct: Math.random() * Math.PI * 2, weight: Math.random() * 10 + 2, friction: 0.88 }
-    this.g = { direct: Math.PI * 0.5 + (Math.random() * 0.4 - 0.2), weight: Math.random() * 0.25 + 0.25 }
-    this.a = { change: Math.random() * 0.4 - 0.2, min: this.v.direct - Math.PI * 0.4,
-      max: this.v.direct + Math.PI * 0.4 }
+  /**
+   * 初始化初始速度，横向加速度，纵向加速度
+   * 每次 update 需要利用到 v,g 计算坐标点
+   */
+  this.v = { direct: Math.random() * Math.PI * 2, weight: Math.random() * 10 + 2, friction: 0.88 }
+  this.g = { direct: Math.PI * 0.5 + (Math.random() * 0.4 - 0.2), weight: Math.random() * 0.25 + 0.25 }
+  this.a = { change: Math.random() * 0.4 - 0.2, min: this.v.direct - Math.PI * 0.4,
+    max: this.v.direct + Math.PI * 0.4 }
 
-    // 随机化火花的宽度
-    this.width = Math.random() * 3
+  // 火花的宽度
+  this.width = Math.random() * 3
 
-    // 初始化生命周期
-    this.lifespan = Math.round(Math.random() * 20 + 30)
-    this.maxlife = this.lifespan
+  // 初始化生命周期
+  this.lifespan = Math.round(Math.random() * 20 + 30)
+  this.maxlife = this.lifespan
 
-    // 初始化运动轨迹的前一个点
-    this.prev = { x: this.x, y: this.y }
-  }
+  // 初始化运动轨迹的前一个点
+  this.prev = { x: this.x, y: this.y }
+}
 ```
 
 理解了 Spark 类的初始化，我们可以尝试完成 render 以及 update 方法了。
 
 ##### render 方法
 
-需要利用到 canvas 的绘图 API，主要包括：
+render 方法需要利用到 canvas 的绘图 API，主要包括：
 
 1. beginPath、closePath
 2. globalAlpha
@@ -429,7 +430,7 @@ render 方法并不复杂，只是单纯的利用 canvas 的 API 实现一个渐
 
 ##### update 方法
 
-update 方法主要有以下功能：
+update 方法要实现以下功能：
 
 1. 根据速度以及加速度重新计算坐标点
 2. 随机化火花的运动轨迹
@@ -478,7 +479,7 @@ this.lifespan > 0 && this.lifespan--
 this.lifespan <=0 && this.remove(index, array)
 ```
 
-如果这么完成 update 方法，实际效果可以不尽如人意，所以，做了下面的微调：
+如果这么完成 update 方法，火花四溅的范围偏大，实际效果并不好，所以，做了下面的微调：
 
 ```javascript
 /**
@@ -526,7 +527,7 @@ public update (index, array) {
     * 火花运动生命时长，超过一定时间，则删除该节点
     */
   this.lifespan > 0 && this.lifespan--
-  this.lifespan <=0 && this.remove(index, array)
+  this.lifespan <= 0 && this.remove(index, array)
 }
 ```
 
@@ -534,12 +535,12 @@ public update (index, array) {
 
 #### Particles 类
 
-Particles 类需要两个私有属性来实现：
+Particles 类需要两个私有属性：
 
 1. max：同时可以出现火花数目
 2. sparks：存放火花的数组
 
-在初始化 Particles 类时，需要火花数目一定的随机性，所以 max 值都不一样。
+在初始化 Particles 类时，火花数目最好具有一定的随机性，所以 max 值尽量每次都不一样。
 
 ```typescript
 constructor (options: any) {
@@ -555,23 +556,23 @@ constructor (options: any) {
 }
 ```
 
-Particles 类需要提供两个方法：
+Particles 类要实现两个功能：
 
-1. update：更新所有的火花
-2. render：渲染所有的火花
+1. 更新所有的火花
+2. 渲染所有的火花
 
 这两个方法很简单，都是自解释代码：
 
 ```typescript
 /**
-  * 更新火花
+  * 更新所有的火花
   */
 public update () {
   this.sparks.forEach((s, i) => s.update(i, this.sparks))
 }
 
 /**
-  * 渲染火花
+  * 渲染所有的火花
   * @param ctx canvas - canvas 对象的 context 属性
   */
 public render (ctx) {
@@ -581,9 +582,9 @@ public render (ctx) {
 
 #### 火花的引入
 
-行百里者半九十，我们还要将这火花两个类跟之前的 logo 展示相结合，实现“火花四溅”这一效果，一起来吧！
+行百里者半九十，我们还要将 Spark 以及 Particles 两个类跟之前的代码相结合，实现“火花四溅”这一效果，一起来吧！
 
-首先在外部 canvas，需要添加一个响应式数据：`particles`，用来保存生成的火花。
+首先需要添加一个响应数据：`particles`，用来保存火花。
 
 ```javascript
 data () {
@@ -598,9 +599,9 @@ data () {
 }
 ```
 
-由于火花生成的位置与渲染的内部 canvas 相关，我们需要将 particles 传入 Text 类内进行操作。
+由于火花生成的位置要在 logo 渲染的过程中计算，我们需将 particles 传入 Text 类内进行操作。
 
-这就需要在 Text 类添加一个 update 方法，主要思路是遍历之前获取的图片数据，根据数据的代表的色值判断，如果色值大于 255， 说明有图像，这时候就可以添加“火花”了。最基础的代码如下：
+这就需要在 Text 类添加一个 update 方法，主要思路是遍历之前获取的图片数据，根据数据判断色值，如果色值大于 255， 说明有图像，这时候就可以添加“火花”了。最基础的代码如下：
 
 ```typescript
 public update (particles: any[]): any {
@@ -629,7 +630,7 @@ if (this.index >= this.base.width) {
 }
 ```
 
-利用 update 方法，可以初始化火花。这样，火花的 render 以及 update 可以在外部 canvas 直接进行操作。我们直接来对 loop 方法进行修改。
+利用 update 方法，可以初始化火花。这样，火花的 render 以及 update 可以在 loop 中调用，loop 方法修改如下：
 
 ```javascript
 loop () {
@@ -654,4 +655,4 @@ render () {
 }
 ```
 
-这样，loading 的动画效果基本就完成了，其它还有一些可以优化的点。比如，对于 window.requestAnimationFrame 的嗅探以及兼容处理；在资源加载完成之后，停止 loading 动画的渲染等等。
+这样，loading 的动画效果基本就完成了，其它还有一些可以优化的点。比如，对于 window.requestAnimationFrame 的嗅探以及兼容处理；在资源加载完成之后，停止 loading 动画的渲染等等，大家可以自行添加。
