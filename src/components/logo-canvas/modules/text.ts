@@ -8,8 +8,6 @@ export default class Text {
   private tcontext: any
   private base: any
   private data: any
-  private delay: number
-  private baseDelay: number
   private index: number
   private x: number
   private y: number
@@ -18,9 +16,7 @@ export default class Text {
   constructor () {
     this.tcanvas = document.createElement('canvas')
     this.tcontext = this.tcanvas.getContext('2d')
-    this.delay = 1
     this.index = 0
-    this.baseDelay = this.delay
   }
 
   public init (w: number, h: number, src: string): any {
@@ -72,11 +68,6 @@ export default class Text {
         }
       }
     }
-
-    if (this.delay-- < 0) {
-      this.index += 4
-      this.delay += this.baseDelay
-    }
   }
 
   public render (ctx): void {
@@ -85,7 +76,9 @@ export default class Text {
       this.clear = true
     }
 
-    this.index += 4
+    if (this.index < this.base.width) {
+      this.index += 4
+    }
 
     this.tcontext.putImageData(this.data, 0, 0, 0, 0, this.index, this.base.height)
     ctx.drawImage(this.tcanvas, this.x, this.y)

@@ -6,6 +6,8 @@
 
 ![logo-3](https://github.com/Ge-yuan-jun/animation-demo/blob/master/static/logo-3.png)
 
+[本文的代码](https://github.com/Ge-yuan-jun/animation-demo/tree/master/src/components/logo-canvas)
+
 ### 从 loading 动效入手
 
 目前工作中主要负责活动页的前端 UI 展示。在活动页面的制作过程中，发现其与平常的功能页面存在一些不同点：
@@ -579,9 +581,9 @@ public render (ctx) {
 
 #### 火花的引入
 
-行百里者半九十，我们还要将这两个类跟之前的 logo 展示相结合，一起来吧！
+行百里者半九十，我们还要将这火花两个类跟之前的 logo 展示相结合，实现“火花四溅”这一效果，一起来吧！
 
-首先在外部 canvas，需要添加一个响应式数据：`particles`。
+首先在外部 canvas，需要添加一个响应式数据：`particles`，用来保存生成的火花。
 
 ```javascript
 data () {
@@ -595,3 +597,61 @@ data () {
   }
 }
 ```
+
+由于火花生成的位置与渲染的内部 canvas 相关，我们需要将 particles 传入 Text 类内进行操作。
+
+这就需要在 Text 类添加一个 update 方法，主要思路是遍历之前获取的图片数据，根据数据的代表的色值判断，如果色值大于 255， 说明有图像，这时候就可以添加“火花”了。最基础的代码如下：
+
+```typescript
+public update (particles: any[]): any {
+  const data = this.data.data
+  for (let i = this.index; i < this.index + 4; i++) {
+    for (let j = i * 4; j < data.length; j += (4 * this.data.width)) {
+      const bitmap = data[j] + data[j + 1] + data[j + 2] + data[j + 3] // R:0 G:0 B:0 A:225 -> 无图像
+      if (bitmap > 255) {
+        // 0.98 是一个参数，可随意设置，主要用来控制火花的数目
+        if (Math.random() > 0.98 && i < this.index + 3) {
+          const x = this.x + i
+          const y = this.y + (j / this.base.width / 4)
+          Math.random() > 0.5 && particles.push(new Particles({x, y}))
+        }
+      }
+    }
+  }
+}
+```
+
+可以对上面这一段代码做一个优化，在函数刚开始时，判断 index 是否超过图片的宽度，如超出，则不再执行：
+
+```typescript
+if (this.index >= this.base.width) {
+  return
+}
+```
+
+利用 update 方法，可以初始化火花。这样，火花的 render 以及 update 可以在外部 canvas 直接进行操作。我们直接来对 loop 方法进行修改。
+
+```javascript
+loop () {
+  this.render()
+  this.update()
+  window.requestAnimationFrame(this.loop)
+},
+// 更新 logo 以及火花
+update () {
+  this.text.update(this.particles)
+  this.particles.forEach(p => p.update())
+},
+// 渲染 logo 以及火花
+render () {
+  this.context.globalCompositeOperation = 'source-over'
+  this.context.globalAlpha = 1
+  this.context.fillStyle = '#000000'
+  this.context.fillRect(0, 0, this.cwidth, this.cheight)
+
+  this.text.render(this.context)
+  this.particles.forEach(p => p.render(this.context))
+}
+```
+
+这样，loading 的动画效果基本就完成了，其它还有一些可以优化的点。比如，对于 window.requestAnimationFrame 的嗅探以及兼容处理；在资源加载完成之后，停止 loading 动画的渲染等等。
