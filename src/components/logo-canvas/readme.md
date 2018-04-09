@@ -18,9 +18,9 @@
 
 针对静态资源多这一特点，最常见的做法就是预加载，先加载第一页所有的静态资源。这样做的坏处就是页面 loading 的时间会变长。如果采用一个单调的“菊花”图案展示给用户，会让时间显得更加漫长，所以资源加载期间的 loading 动画成了我们一个动脑筋的地方。
 
-首先，loading 动画不需要请求太大的静态资源。其次，loading 动画最好跟公司品牌有一定的连续性，比如，我们公司的小电视以及“bilibili”。最后，loading 动画要足够的炫，这样，才能吸引住用户的眼球，保证留存率。
+首先，loading 动画不能请求太大的静态资源。其次，loading 动画最好跟公司品牌有一定的连续性，比如，公司的小电视以及“bilibili”。最后，loading 动画要足够的炫，这样，才能吸引住用户的眼球，保证留存率。
 
-我们选择了在 logo 上面做文章。技术选型为 canvas，采用 vue 框架，静态资源选择了一张 6kb 的 logo 图片，格式为 png（注意：一定要 png 透明图片，这个在下面会解释）。由于业务的原因，动画只在 web 平台展示。
+我们选择了在 logo 上面做文章，打算基于现有的技术框架 vue ，结合 canvas，做一些好玩的事情。由于时间原因，我们没有手动绘制 logo， 而是选择了一张 6kb 的 logo 图片，格式为 png（注意：一定要 png 透明图片，这个在下面会解释），读取图片，然后绘制动画。由于业务的原因，动画只在 web 平台展示。
 
 ### 效果分析
 
@@ -607,7 +607,7 @@ public update (particles: any[]): any {
   const data = this.data.data
   for (let i = this.index; i < this.index + 4; i++) {
     for (let j = i * 4; j < data.length; j += (4 * this.data.width)) {
-      const bitmap = data[j] + data[j + 1] + data[j + 2] + data[j + 3] // R:0 G:0 B:0 A:225 -> 无图像
+      const bitmap = data[j] + data[j + 1] + data[j + 2] + data[j + 3] // R:0 G:0 B:0 A:255 -> 无图像
       if (bitmap > 255) {
         // 0.98 是一个参数，可随意设置，主要用来控制火花的数目
         if (Math.random() > 0.98 && i < this.index + 3) {
