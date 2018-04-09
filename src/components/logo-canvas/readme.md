@@ -71,7 +71,7 @@
 data () {
   return {
     canvas: {}, // canvas DOM
-    context: {}, // canvas 画布
+    context: {}, // canvas 上下文
     cwidth: 0, // canvas 的宽度
     cheight: 0, // canvas 的高度
     text: {}, // Text 类的实例，主要是利用这个类来实现 logo 的展示
@@ -84,7 +84,7 @@ data () {
 ```javascript
 // 挂载时即获取图片的数据
 mounted () {
-  // 获取 canvas 画布
+  // 获取 canvas 上下文
   this.canvas = document.getElementById('load-canvas')
   this.context = this.canvas.getContext('2d')
 
@@ -123,7 +123,7 @@ mounted () {
 具体的代码示例：
 
 ```javascript
-// this.tcontext 为 Text 类内部的 canvas 2d 画布
+// this.tcontext 为 Text 类内部的 canvas 2d 上下文
 this.tcontext.putImageData(this.data, 0, 0, 0, 0, this.index + 1, this.base.height)
 
 // ctx 为调用方 canvas 2d 画布
@@ -138,7 +138,7 @@ ctx.drawImage(this.tcanvas, this.x, this.y)
 
 ```typescript
 private tcanvas: any // 内部的 canvas
-private tcontext: any // 内部的 canvas 画布
+private tcontext: any // 内部的 canvas 上下文
 private clear: boolean = false // 初始化时，标识是否清除 canvas 画布内容
 private base: any // 内部 canvas 的基本属性
 private x: number // logo 图片渲染的起始 x 轴值
@@ -221,7 +221,7 @@ render 方法需要一个参数：
 
 - ctx：canvas 的 2d 画布，这样就可以读取 Text 内部存储的图片数据
 
-其次，render 函数刚调用时，需要清空内部 canvas 2d 画布的图片数据，这样才能保证渲染的动画效果。
+render 函数刚调用时，需要清空内部 canvas 2d 画布的图片数据，这样才能保证渲染的动画效果。
 
 ```typescript
 public render (ctx): void {
@@ -258,7 +258,7 @@ loop函数如下：
 
 ```javascript
 loop () {
-  // 设置 canvas 画布
+  // 设置 canvas 上下文
   this.context.globalCompositeOperation = 'source-over'
   this.context.globalAlpha = 1
   this.context.fillStyle = '#000000'
@@ -579,7 +579,7 @@ public update () {
 
 /**
   * 渲染所有的火花
-  * @param ctx canvas - canvas 对象的 context 属性
+  * @param ctx canvas - canvas 对象的 context 上下文
   */
 public render (ctx) {
   this.sparks.forEach(s => s.render(ctx))
