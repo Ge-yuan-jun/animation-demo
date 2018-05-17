@@ -35,6 +35,15 @@ export default class Smoke extends Vue {
     renderer.setSize( 1920, 996 )
     stage.appendChild( renderer.domElement )
 
+    // resize 期间改变 canvas 的大小
+    window.addEventListener('resize', function () {
+      const height = window.innerHeight
+      const width = window.innerWidth
+      renderer.setSize(width, height)
+      camera.aspect = width/height
+      camera.updateProjectionMatrix()
+    })
+
     // 烟花爆炸效果
     const fps = 30
     let now
