@@ -89,6 +89,10 @@ module.exports = {
         include: srcFolders
       },
       {
+        test: /\.obj?$/,
+        loader: 'url-loader'
+      },
+      {
         test: /\.(png|jpe?g|gif)(\?.*)?$/,
         loader: 'url-loader',
         query: {

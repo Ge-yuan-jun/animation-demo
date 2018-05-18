@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 
+import Demo from './demo/index.vue'
 import FireWork from './fireworks/index.vue'
 import LogoCanvas from './logo-canvas/index.vue'
 import Redpack from './rotate3d/index.vue'
@@ -12,6 +13,11 @@ Vue.use(VueRouter)
 
 const router = new VueRouter({
   routes: [
+    {
+      path: '/',
+      name: 'Demo',
+      component: Demo
+    },
     {
       path: '/spring-loading',
       name: 'SpringLoading',
