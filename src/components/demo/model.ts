@@ -42,9 +42,9 @@ export default class DemoComponent extends Vue {
     const ObjLoader = new this.THREE.OBJLoader()
 
     ObjLoader.load(
-      require('./model/grave.obj'),
+      require('./model/male.obj'),
       function (object) {
-        object.position.y = - 50
+        object.position.y = - 95
         scene.add(object)
       },
       function (xhr) {
