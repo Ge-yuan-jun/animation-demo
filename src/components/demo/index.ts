@@ -1,3 +1,11 @@
+/*
+ * @Author: Ge.Yuanjun
+ * @Date: 2018-05-21 14:37:22
+ * @Last Modified by: Ge.Yuanjun
+ * @Last Modified time: 2018-05-21 14:37:49
+ * @desc: 可转动的六面体实现
+ */
+
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 
@@ -18,7 +26,6 @@ export default class DemoComponent extends Vue {
   init () {
     const OrbitControls = ThreeOrbit(THREE)
 
-    console.log('objLoader', THREE.ObjectLoader)
     const scene = new THREE.Scene()
     const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 )
 
