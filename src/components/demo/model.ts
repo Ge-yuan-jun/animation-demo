@@ -1,3 +1,11 @@
+/*
+ * @Author: Ge.Yuanjun
+ * @Date: 2018-05-21 14:30:32
+ * @Last Modified by: Ge.Yuanjun
+ * @Last Modified time: 2018-05-21 14:32:42
+ * @desc: 单个 obj 文件的模型导入，具有 resize 以及 mousemove 角度变换
+ */
+
 import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 
