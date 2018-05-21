@@ -2,8 +2,9 @@ import Vue from 'vue'
 import { Component } from 'vue-property-decorator'
 
 import * as THREE from 'three'
-import OBJLoader from 'three-obj-loader'
-import ThreeOrbit from 'three-orbit-controls'
+import { OBJLoader } from './modules/OBJLoader'
+
+OBJLoader(THREE)
 /**
  * Demo Component.
  *
@@ -17,42 +18,33 @@ import ThreeOrbit from 'three-orbit-controls'
 export default class DemoComponent extends Vue {
   THREE: any
 
+  windowHalfX: number = window.innerWidth / 2
+  windowHalfY: number = window.innerHeight /2
+
+  mouseX: number = 0
+  mouseY: number = 0
+
   init () {
-    const OrbitControls = ThreeOrbit(THREE)
+    // camera
+    const camera = new THREE.PerspectiveCamera( 45, window.innerWidth/window.innerHeight, 1, 2000 )
+    camera.position.z = 250
 
+    // scene
     const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera( 75, window.innerWidth/window.innerHeight, 0.1, 1000 )
 
-    const renderer = new THREE.WebGLRenderer()
+    const ambientLight = new THREE.AmbientLight(0xcccccc, 0.4)
+    scene.add(ambientLight)
 
-    const container = <HTMLElement>this.$refs.container
+    const pointLight = new THREE.PointLight(0xcccccc, 0.8)
+    camera.add(pointLight)
+    scene.add(camera)
 
-    renderer.setSize( window.innerWidth, window.innerHeight )
-
-    container.appendChild( renderer.domElement )
-    camera.position.z = 5
-
-    // 添加光源，使材质展现出来
-    const keyLight = new THREE.DirectionalLight(new THREE.Color('hsl(30, 100%, 75%)'), 1.0)
-    keyLight.position.set(-100, 0, 100)
-
-    const fillLight = new THREE.DirectionalLight(new THREE.Color('hsl(240, 100%, 75%)'), 0.75)
-    fillLight.position.set(100, 0, 100)
-
-    const backLight = new THREE.DirectionalLight(0xffffff, 1.0)
-    backLight.position.set(100, 0, -100).normalize()
-
-    scene.add(keyLight)
-    scene.add(fillLight)
-    scene.add(backLight)
-
-    OBJLoader(THREE)
-    this.THREE = THREE
     const ObjLoader = new this.THREE.OBJLoader()
 
     ObjLoader.load(
-      require('./model/male02.obj'),
+      require('./model/grave.obj'),
       function (object) {
+        object.position.y = - 50
         scene.add(object)
       },
       function (xhr) {
@@ -63,8 +55,40 @@ export default class DemoComponent extends Vue {
       }
     )
 
-    const animate = function () {
+    const renderer = new THREE.WebGLRenderer()
+
+    const container = <HTMLElement>this.$refs.container
+
+    renderer.setSize( window.innerWidth, window.innerHeight )
+
+    container.appendChild( renderer.domElement )
+
+    const onWindowResize = () => {
+      this.windowHalfX = window.innerWidth / 2
+      this.windowHalfY = window.innerHeight / 2
+
+      camera.aspect = window.innerWidth / window.innerHeight
+      camera.updateProjectionMatrix()
+
+      renderer.setSize(window.innerWidth, window.innerHeight)
+    }
+
+    const onDocumentMouseMove = (event) => {
+      this.mouseX = (event.clientX - this.windowHalfX) / 2
+      this.mouseY = (event.clientY - this.windowHalfY) / 2
+    }
+
+    document.addEventListener( 'mousemove', onDocumentMouseMove, false )
+    window.addEventListener( 'resize', onWindowResize, false )
+
+    const animate = () => {
       requestAnimationFrame( animate )
+
+      // render
+      camera.position.x += (this.mouseX - camera.position.x) * 0.05
+      camera.position.y += (-this.mouseY - camera.position.y) * 0.05
+      camera.lookAt(scene.position)
+
       renderer.render(scene, camera)
     }
 
@@ -72,6 +96,7 @@ export default class DemoComponent extends Vue {
   }
 
   mounted () {
+    this.THREE = THREE
     this.init()
   }
 }
