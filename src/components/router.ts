@@ -4,6 +4,7 @@ import VueRouter from 'vue-router'
 import Demo from './demo/index.vue'
 import FireWork from './fireworks/index.vue'
 import LogoCanvas from './logo-canvas/index.vue'
+import Nest from './nest/index.vue'
 import Redpack from './rotate3d/index.vue'
 import Smoke from './smoke/index.vue'
 import SpringLoading from './spring-loading/index.vue'
@@ -47,6 +48,11 @@ const router = new VueRouter({
       path:'/logo-canvas',
       name: 'LogoCanvas',
       component: LogoCanvas
+    },
+    {
+      path: '/nest',
+      name: 'Nest',
+      component: Nest
     }
   ]
 })
