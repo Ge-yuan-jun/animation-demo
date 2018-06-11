@@ -13,7 +13,6 @@
   //获取窗口宽高
 var w = window.innerWidth;
 var h = window.innerHeight;
-const maxLen = Math.sqrt(w * w + h * h)
 
 var canvas = document.getElementById("myCanvas");
 var ctx = canvas.getContext("2d"); //设置画布宽高与窗口宽高一样
@@ -37,7 +36,7 @@ function Round () {
   this.speedX = fnRandom(0,4)>2?speed:-speed;
   this.speedY = fnRandom(0,4)>2?speed:-speed;
   //颜色
-  this.color = 'rgba(0,0,0,' + (parseInt(Math.random() * 100) / 100) + ')';
+  this.color = '#798a98';
 }
 
 Round.prototype.draw = function(){
@@ -68,14 +67,12 @@ function initRound(){
   //初始化30个圆形对象,放到数组中
   for(var i = 0 ; i<20;i++){
     var obj = new Round();
-    obj.draw();
-    obj.move();
     allRound.push(obj);
   }
 }
 initRound();
-var dxdy = []
 function roundMove(){
+  var dxdy = []
   ctx.clearRect(0,0,canvas.width,canvas.height);
   //遍历所有的圆形对象,让对象自己重绘,移动
   for (var i = 0 ;i <allRound.length;i++) {
@@ -97,12 +94,14 @@ function roundMove(){
       const o = C > 0.03 ? 0.03 : C
       ctx.strokeStyle = 'rgba(0,0,0,'+ o +')'
 
-      ctx.beginPath()
-      ctx.lineWidth=2;
-      ctx.moveTo(dxdy[i].dx,dxdy[i].dy)
-      ctx.lineTo(dxdy[j].dx,dxdy[j].dy);
-      ctx.closePath()
-      ctx.stroke()
+      if (l < 500 && l > 250) {
+        ctx.beginPath()
+        ctx.lineWidth=2;
+        ctx.moveTo(dxdy[i].dx,dxdy[i].dy)
+        ctx.lineTo(dxdy[j].dx,dxdy[j].dy);
+        ctx.closePath()
+        ctx.stroke()
+      }
     }
   }
   window.requestAnimationFrame(roundMove)
